@@ -1,0 +1,34 @@
+# kubernetes/configmap.yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: dlp-analytics-config
+  namespace: dlp-ns # Рекомендуется использовать неймспейс
+data:
+  # Общие переменные (могут быть переопределены в deployments)
+  NODE_ENV: "production" # Или "development", "staging" в зависимости от окружения
+
+  # Frontend Config
+  REACT_APP_API_URL: "http://api.dlp.yourdomain.com/api" # URL для доступа к API через Ingress
+  REACT_APP_NAME: "DLP Analytics System (K8s)"
+
+  # Backend Config (некоторые значения будут из Secrets)
+  BACKEND_PORT: "5001"
+  # MONGO_URI - будет в Secrets
+  # JWT_SECRET - будет в Secrets
+  JWT_EXPIRE_ACCESS: "1h"
+  JWT_EXPIRE_REFRESH: "7d"
+  REDIS_HOST: "dlp-redis-service" # Имя Kubernetes сервиса для Redis
+  REDIS_PORT: "6379"
+  ML_ENGINE_URL: "http://dlp-ml-engine-service:5002" # Имя Kubernetes сервиса для ML-Engine
+
+  # ML Engine Config
+  ML_ENGINE_PORT: "5002"
+
+  # Monitoring (если порты не стандартные и не определены в Prometheus config)
+  # PROMETHEUS_PORT: "9090" # Обычно Prometheus сам себя скрейпит
+  # GRAFANA_PORT: "3000" # Или 3001, если изменен
+
+  # Пример дополнительной конфигурации
+  LOG_LEVEL: "info"
+  DEFAULT_USER_ROLE: "User"

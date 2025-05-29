@@ -1,0 +1,64 @@
+﻿# monitoring/prometheus.yml
+# myglobal:
+#   scrape_interval: 15s # По умолчанию 1 минута
+#   evaluation_interval: 15s # По умолчанию 1 минута
+#   # scrape_timeout is set to the global default (10s).
+
+# Alertmanager configuration (если вы будете настраивать оповещения Prometheus)
+# alerting:
+#   alertmanagers:
+#     - static_configs:
+#         - targets:
+#           # - alertmanager:9093
+
+# Load rules once and periodically evaluate them according to the global 'evaluation_interval'.
+# rule_files:
+  # - "first_rules.yml"
+  # - "second_rules.yml"
+
+# A scrape configuration containing exactly one endpoint to scrape:
+# Here it's Prometheus itself.
+scrape_configs:
+  # Задача для сбора метрик с самого Prometheus
+  - job_name: "prometheus"
+    static_configs:
+      - targets: ["localhost:9090"] # Prometheus слушает на этом порту по умолчанию
+
+  # Задача для сбора метрик с вашего Node.js бэкенда
+  # Предполагается, что бэкенд предоставляет метрики на /metrics
+  # и доступен в Docker-сети по имени сервиса 'backend'
+  - job_name: "dlp_backend"
+    # metrics_path defaults to '/metrics'
+    # scheme defaults to 'http'.
+    static_configs:
+      - targets: ["backend:5001"] # 'backend' - имя сервиса из docker-compose.yml, 5001 - порт бэкенда
+                                  # Убедитесь, что бэкенд предоставляет /metrics на этом порту
+                                  # или на другом, и укажите metrics_path: /your/metrics/path
+
+  # Задача для сбора метрик с вашего Python ML-движка
+  # Предполагается, что ML-движок предоставляет метрики на /metrics
+  # и доступен в Docker-сети по имени сервиса 'ml-engine'
+  - job_name: "ml_engine"
+    static_configs:
+      - targets: ["ml-engine:5002"] # 'ml-engine' - имя сервиса из docker-compose.yml, 5002 - порт ML-движка
+                                     # Убедитесь, что ML-движок предоставляет /metrics на этом порту
+                                     # или на другом, и укажите metrics_path: /your/metrics/path
+  
+  # Если вы будете использовать Node Exporter для системных метрик хоста
+  # - job_name: 'node_exporter'
+  #   static_configs:
+  #     - targets: ['node-exporter:9100'] # Если вы добавите сервис node-exporter в docker-compose
+
+  # Если Redis Exporter используется для метрик Redis
+  # - job_name: 'redis_exporter'
+  #   static_configs:
+  #     - targets: ['redis-exporter:9121'] # Если добавите сервис redis-exporter
+
+  # Если MongoDB Exporter используется для метрик MongoDB
+  # - job_name: 'mongodb_exporter'
+  #   static_configs:
+  #     - targets: ['mongodb-exporter:9216'] # Если добавите сервис mongodb-exporter
+
+# Важно: Для того чтобы Prometheus мог "видеть" сервисы 'backend' и 'ml-engine'
+# по их именам, Prometheus должен быть в той же Docker-сети, что и эти сервисы.
+# Это уже настроено в вашем `docker-compose.yml` (`dlp_network`).

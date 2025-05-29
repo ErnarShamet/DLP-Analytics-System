@@ -1,0 +1,38 @@
+# kubernetes/ingress.yaml
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: dlp-analytics-ingress
+  namespace: dlp-ns
+  annotations:
+    # Аннотации зависят от вашего Ingress Controller
+    # Пример для Nginx Ingress:
+    nginx.ingress.kubernetes.io/rewrite-target: / # Или /$2 для pathType: Prefix
+    # nginx.ingress.kubernetes.io/ssl-redirect: "true" # Если используете HTTPS
+    # nginx.ingress.kubernetes.io/force-ssl-redirect: "true" # Если используете HTTPS
+    # kubernetes.io/ingress.class: "nginx" # Если у вас несколько Ingress Controllers
+    # cert-manager.io/cluster-issuer: "letsencrypt-prod" # Если используете cert-manager для SSL
+spec:
+  # ingressClassName: nginx # Для Kubernetes 1.18+ вместо аннотации kubernetes.io/ingress.class
+  rules:
+    - host: dlp.yourdomain.com # <--- ЗАМЕНИТЕ НА ВАШ ДОМЕН
+      http:
+        paths:
+          - path: /api # Все запросы к dlp.yourdomain.com/api/...
+            pathType: Prefix # Или ImplementationSpecific
+            backend:
+              service:
+                name: dlp-backend-service # Имя вашего backend сервиса
+                port:
+                  number: 5001 # Порт backend сервиса
+          - path: / # Все остальные запросы к dlp.yourdomain.com/...
+            pathType: Prefix
+            backend:
+              service:
+                name: dlp-frontend-service # Имя вашего frontend сервиса
+                port:
+                  number: 80 # Порт frontend сервиса
+  # tls: # Раскомментируйте и настройте для HTTPS
+  # - hosts:
+  #   - dlp.yourdomain.com
+  #   secretName: dlp-tls-secret # Секрет, содержащий ваш TLS сертификат и ключ

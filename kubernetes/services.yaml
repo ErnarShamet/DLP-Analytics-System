@@ -1,0 +1,81 @@
+# kubernetes/services.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: dlp-mongo-service
+  namespace: dlp-ns
+  labels:
+    app: dlp-mongo
+spec:
+  ports:
+    - port: 27017
+      targetPort: 27017 # Порт контейнера
+      name: mongo
+  clusterIP: None # Для StatefulSet (headless service), чтобы каждый под имел свой DNS
+  selector:
+    app: dlp-mongo
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: dlp-redis-service
+  namespace: dlp-ns
+  labels:
+    app: dlp-redis
+spec:
+  ports:
+    - port: 6379
+      targetPort: 6379 # Порт контейнера
+      name: redis
+  selector:
+    app: dlp-redis
+  type: ClusterIP # Доступен только внутри кластера
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: dlp-backend-service
+  namespace: dlp-ns
+  labels:
+    app: dlp-backend
+spec:
+  ports:
+    - port: 5001 # Порт, на котором сервис будет слушать внутри кластера
+      targetPort: http # Имя порта из Deployment (или напрямую номер порта контейнера 5001)
+      name: http
+  selector:
+    app: dlp-backend
+  type: ClusterIP # Доступен только внутри кластера (Ingress будет управлять внешним доступом)
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: dlp-frontend-service
+  namespace: dlp-ns
+  labels:
+    app: dlp-frontend
+spec:
+  ports:
+    - port: 80 # Порт, на котором сервис будет слушать внутри кластера
+      targetPort: http # Имя порта из Deployment (или напрямую номер порта контейнера 80)
+      name: http
+  selector:
+    app: dlp-frontend
+  type: ClusterIP # Доступен только внутри кластера (Ingress будет управлять внешним доступом)
+  # type: LoadBalancer # Если вы хотите прямой доступ к фронтенду через LoadBalancer облачного провайдера
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: dlp-ml-engine-service
+  namespace: dlp-ns
+  labels:
+    app: dlp-ml-engine
+spec:
+  ports:
+    - port: 5002
+      targetPort: http # Имя порта из Deployment (или напрямую номер порта контейнера 5002)
+      name: http
+  selector:
+    app: dlp-ml-engine
+  type: ClusterIP

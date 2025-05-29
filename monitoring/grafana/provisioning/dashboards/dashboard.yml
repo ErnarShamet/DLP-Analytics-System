@@ -1,0 +1,14 @@
+﻿# monitoring/grafana/provisioning/dashboards/dashboard.yml
+apiVersion: 1
+
+providers:
+  - name: 'default' # Имя провайдера (может быть любым)
+    orgId: 1        # ID организации, в которую будут загружены дашборды (1 - стандартная "Main Org.")
+    folder: ''      # Имя папки в Grafana, куда поместить дашборды. Пусто - в General.
+    type: file      # Тип провайдера - файл
+    disableDeletion: false # Если true, дашборды, удаленные из файловой системы, не будут удалены из Grafana
+    editable: true  # Если true, пользователи смогут редактировать эти дашборды в UI Grafana
+    options:
+      path: /etc/grafana/provisioning/dashboards # Путь внутри контейнера Grafana, куда вы смонтируете свои JSON-дашборды
+      # Для Docker, вы смонтируете локальную папку (например, monitoring/grafana/dashboards_json)
+      # в этот путь /etc/grafana/provisioning/dashboards

@@ -1,0 +1,24 @@
+﻿flask
+pandas
+umpyscikit-learn# Add other dependencies like tensorflow, pytorch, joblib, gunicorn etc.
+Flask==2.3.3
+gunicorn==21.2.0
+scikit-learn==1.3.2 # Или версия, которую вы использовали для обучения
+pandas==2.1.3
+numpy==1.26.2
+joblib==1.3.2
+python-dotenv==1.0.0
+nltk==3.8.1 # Если используете NLTK для предобработки текста
+
+# Если планируете использовать FastAPI вместо Flask:
+# fastapi==0.104.1
+# uvicorn[standard]==0.24.0.post1
+
+# Если планируете использовать TensorFlow или PyTorch, добавьте их:
+# tensorflow
+# torch
+# transformers (для моделей Hugging Face)
+
+# Для тестирования (можно вынести в dev-requirements.txt)
+pytest==7.4.3
+requests==2.31.0 # Для тестирования API

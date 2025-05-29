@@ -1,0 +1,63 @@
+# kubernetes/ml-engine-deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: dlp-ml-engine
+  namespace: dlp-ns
+  labels:
+    app: dlp-ml-engine
+spec:
+  replicas: 1 # ML может быть ресурсоемким, начните с 1
+  selector:
+    matchLabels:
+      app: dlp-ml-engine
+  template:
+    metadata:
+      labels:
+        app: dlp-ml-engine
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "5002"
+        prometheus.io/path: "/metrics"
+    spec:
+      containers:
+        - name: ml-engine
+          image: your-dockerhub-username/dlp-ml-engine:latest # <--- ЗАМЕНИТЕ НА ВАШ ОБРАЗ
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 5002
+              name: http
+          env:
+            - name: ML_ENGINE_PORT # Эта переменная используется в Dockerfile для Gunicorn
+              valueFrom:
+                configMapKeyRef:
+                  name: dlp-analytics-config
+                  key: ML_ENGINE_PORT
+            # Добавьте другие переменные окружения, если они нужны ML-движку
+            # Например, пути к моделям, если они не встроены в образ, а монтируются через PV
+          # livenessProbe:
+          #   httpGet:
+          #     path: /health # Ваш health check эндпоинт
+          #     port: 5002
+          #   initialDelaySeconds: 45 # ML модели могут долго загружаться
+          #   periodSeconds: 20
+          # readinessProbe:
+          #   httpGet:
+          #     path: /health
+          #     port: 5002
+          #   initialDelaySeconds: 30
+          #   periodSeconds: 10
+          # resources:
+          #   requests:
+          #     memory: "512Mi" # Зависит от ваших моделей
+          #     cpu: "500m"
+          #   limits:
+          #     memory: "1Gi"
+          #     cpu: "1"
+          # volumeMounts: # Если модели хранятся на Persistent Volume
+          #   - name: ml-models-storage
+          #     mountPath: /app/models
+      # volumes: # Если модели хранятся на Persistent Volume
+      #   - name: ml-models-storage
+      #     persistentVolumeClaim:
+      #       claimName: ml-models-pvc # Вам нужно будет создать этот PVC

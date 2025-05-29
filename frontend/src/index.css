@@ -1,0 +1,55 @@
+/* frontend/src/index.css */
+/* Import Tailwind's base, components, and utilities */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Custom base styles or overrides */
+body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', 'Roboto', 'Oxygen',
+        'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+        sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    /* Applied via Tailwind in index.html, but can be a fallback */
+    /* background-color: #1a202c;
+    color: #e2e8f0; */
+}
+
+code {
+    font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
+        monospace;
+}
+
+/* Example: Custom scrollbar styling (optional) */
+/* For Webkit browsers */
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: #2d3748; /* A darker shade of your surface color */
+    border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #4a5568; /* A lighter shade, or your accent color */
+    border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #718096; /* A bit lighter on hover */
+}
+
+/* For Firefox (more limited styling) */
+/* html {
+    scrollbar-width: thin;
+    scrollbar-color: #4a5568 #2d3748;
+} */
+
+/* Ensure MUI components and Tailwind play well, e.g., with preflight */
+/* Tailwind's preflight can sometimes clash with MUI. If you see issues,
+   you might consider disabling preflight in tailwind.config.js
+   or scoping Tailwind more aggressively. For now, this is usually fine. */

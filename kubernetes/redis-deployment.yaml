@@ -1,0 +1,54 @@
+# kubernetes/redis-deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: dlp-redis
+  namespace: dlp-ns
+  labels:
+    app: dlp-redis
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: dlp-redis
+  template:
+    metadata:
+      labels:
+        app: dlp-redis
+    spec:
+      containers:
+        - name: redis
+          image: redis:7.0-alpine # Используйте конкретную версию
+          ports:
+            - containerPort: 6379
+              name: redis
+          # env: # Если Redis защищен паролем
+          #   - name: REDIS_PASSWORD
+          #     valueFrom:
+          #       secretKeyRef:
+          #         name: dlp-analytics-secrets
+          #         key: REDIS_PASSWORD
+          # args: ["--requirepass", "$(REDIS_PASSWORD)"] # Передача пароля как аргумент
+          # livenessProbe:
+          #   tcpSocket:
+          #     port: 6379
+          #   initialDelaySeconds: 15
+          #   periodSeconds: 20
+          # readinessProbe:
+          #   exec:
+          #     command:
+          #       - redis-cli
+          #       # - -a
+          #       # - $(REDIS_PASSWORD) # Если пароль установлен
+          #       - ping
+          #   initialDelaySeconds: 5
+          #   periodSeconds: 10
+          #   timeoutSeconds: 5
+          #   failureThreshold: 3
+          # volumeMounts: # Если нужен persistence для Redis
+          #   - name: redis-data
+          #     mountPath: /data
+      # volumes: # Если нужен persistence для Redis
+      #   - name: redis-data
+      #     persistentVolumeClaim:
+      #       claimName: redis-pvc # Вам нужно будет создать этот PVC

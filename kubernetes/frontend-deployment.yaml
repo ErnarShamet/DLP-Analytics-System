@@ -1,0 +1,60 @@
+# kubernetes/frontend-deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: dlp-frontend
+  namespace: dlp-ns
+  labels:
+    app: dlp-frontend
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: dlp-frontend
+  template:
+    metadata:
+      labels:
+        app: dlp-frontend
+    spec:
+      containers:
+        - name: frontend
+          image: your-dockerhub-username/dlp-frontend:latest # <--- ЗАМЕНИТЕ НА ВАШ ОБРАЗ
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 80 # Nginx в Dockerfile фронтенда слушает на 80 порту
+              name: http
+          env:
+            # Переменные окружения для фронтенда обычно встраиваются во время сборки (build time)
+            # Но если вы хотите их переопределить во время запуска (run time) для Nginx,
+            # вам нужно будет настроить Nginx на использование этих переменных (например, через envsubst в entrypoint скрипте).
+            # Для Create React App, переменные REACT_APP_* используются во время сборки.
+            # Здесь они показаны для примера, если бы Nginx мог их использовать напрямую для какой-то логики.
+            - name: REACT_APP_API_URL # Эта переменная обычно нужна во время сборки фронтенда
+              valueFrom:
+                configMapKeyRef:
+                  name: dlp-analytics-config
+                  key: REACT_APP_API_URL
+            - name: REACT_APP_NAME
+              valueFrom:
+                configMapKeyRef:
+                  name: dlp-analytics-config
+                  key: REACT_APP_NAME
+          # livenessProbe:
+          #   httpGet:
+          #     path: / # Проверка, что главная страница отдается
+          #     port: 80
+          #   initialDelaySeconds: 15
+          #   periodSeconds: 20
+          # readinessProbe:
+          #   httpGet:
+          #     path: /
+          #     port: 80
+          #   initialDelaySeconds: 5
+          #   periodSeconds: 10
+          # resources:
+          #   requests:
+          #     memory: "128Mi"
+          #     cpu: "100m"
+          #   limits:
+          #     memory: "256Mi"
+          #     cpu: "250m"

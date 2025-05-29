@@ -1,0 +1,73 @@
+# kubernetes/mongo-statefulset.yaml
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: dlp-mongo
+  namespace: dlp-ns
+  labels:
+    app: dlp-mongo
+spec:
+  serviceName: "dlp-mongo-service" # Важно для DNS StatefulSet'а
+  replicas: 1 # Для простоты 1, для HA нужно 3+ и конфигурация репликации
+  selector:
+    matchLabels:
+      app: dlp-mongo
+  template:
+    metadata:
+      labels:
+        app: dlp-mongo
+    spec:
+      terminationGracePeriodSeconds: 10
+      containers:
+        - name: mongo
+          image: mongo:6.0 # Используйте конкретную версию
+          ports:
+            - containerPort: 27017
+              name: mongo
+          env:
+            # Эти переменные используются для инициализации пользователя root при первом запуске
+            # Если база данных уже существует, они могут не иметь эффекта без дополнительных скриптов
+            - name: MONGO_INITDB_ROOT_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: dlp-analytics-secrets
+                  key: MONGO_INITDB_ROOT_USERNAME
+            - name: MONGO_INITDB_ROOT_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: dlp-analytics-secrets
+                  key: MONGO_INITDB_ROOT_PASSWORD
+          volumeMounts:
+            - name: mongo-persistent-storage
+              mountPath: /data/db
+          # livenessProbe:
+          #   exec:
+          #     command:
+          #       - mongosh
+          #       - --eval
+          #       - "db.adminCommand('ping')"
+          #   initialDelaySeconds: 30
+          #   periodSeconds: 10
+          #   timeoutSeconds: 5
+          #   successThreshold: 1
+          #   failureThreshold: 3
+          # readinessProbe:
+          #   exec:
+          #     command:
+          #       - mongosh
+          #       - --eval
+          #       - "db.adminCommand('ping')"
+          #   initialDelaySeconds: 5
+          #   periodSeconds: 10
+          #   timeoutSeconds: 5
+          #   successThreshold: 1
+          #   failureThreshold: 3
+  volumeClaimTemplates: # Определяет, как создавать PersistentVolumeClaims
+    - metadata:
+        name: mongo-persistent-storage
+      spec:
+        accessModes: ["ReadWriteOnce"] # Стандарт для большинства хранилищ
+        resources:
+          requests:
+            storage: 10Gi # Запросите нужный объем. Зависит от вашего StorageClass.
+        # storageClassName: "your-storage-class" # Укажите, если у вас несколько StorageClass
