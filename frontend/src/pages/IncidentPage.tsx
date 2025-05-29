@@ -1,18 +1,18 @@
 // frontend/src/pages/IncidentPage.tsx
+
 import React, { useState, useEffect } from 'react';
-import { Box, Button, CircularProgress, Alert as MuiAlert, Paper, Typography, Tooltip, Chip } from '@mui/material';
-import { DataGrid, GridColDef, GridActionsCellItem } from '@mui/x-data-grid';
+import { Box, Chip, Tooltip, Paper } from '@mui/material'; // Removed Button, CircularProgress, Alert, Typography
+import { DataGrid, GridColDef, GridActionsCellItem, GridPaginationModel } from '@mui/x-data-grid';
 import PageHeader from '../components/common/PageHeader';
 import apiService from '../services/apiService';
-import { Incident } from '../types'; // Define this type
+import { Incident } from '../types'; 
 import { format } from 'date-fns';
 import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import EditIcon from '@mui/icons-material/Edit';
-import { useNavigate } from 'react-router-dom';
+// import { useNavigate } from 'react-router-dom'; // useNavigate can be used if needed for navigation
+import MuiAlert from '@mui/material/Alert';
 
-// Placeholder for IncidentEditor/Detail modal/page
-// import IncidentEditorModal from '../components/incidents/IncidentEditorModal';
 
 interface IncidentRow extends Incident {
     id: string;
@@ -30,26 +30,29 @@ const getPriorityColor = (priority?: string): "error" | "warning" | "info" | "de
 };
 
 const IncidentPage: React.FC = () => {
-    const navigate = useNavigate();
+    // const navigate = useNavigate(); // Uncomment if needed
     const [incidents, setIncidents] = useState<IncidentRow[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
-    // const [isEditorOpen, setIsEditorOpen] = useState(false);
-    // const [editingIncident, setEditingIncident] = useState<Incident | null>(null);
+    const [paginationModel, setPaginationModel] = useState<GridPaginationModel>({ page: 0, pageSize: 10 });
+    const [rowCount, setRowCount] = useState(0);
 
     const fetchIncidents = async () => {
         setLoading(true);
         setError(null);
         try {
-            const response = await apiService.get('/incidents');
+            const response = await apiService.get('/incidents', {
+                params: { page: paginationModel.page + 1, limit: paginationModel.pageSize, sortBy: 'createdAt:desc' }
+            });
             const dataWithIds: IncidentRow[] = response.data.data.map((inc: Incident) => ({
                 ...inc,
                 id: inc._id,
                 assigneeName: inc.assignee ? (inc.assignee as any).username : 'Unassigned',
             }));
             setIncidents(dataWithIds);
+            setRowCount(response.data.count || 0);
         } catch (err: any) {
-            setError(err.response?.data?.error || 'Failed to fetch incidents.');
+            setError(err.response?.data?.error || err.message || 'Failed to fetch incidents.');
         } finally {
             setLoading(false);
         }
@@ -57,51 +60,44 @@ const IncidentPage: React.FC = () => {
 
     useEffect(() => {
         fetchIncidents();
-    }, []);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [paginationModel]);
 
     const handleViewIncident = (id: string) => {
-        // navigate(`/incidents/${id}`); // If you have a dedicated detail page
         console.log("View incident details for:", id);
-        // Or open a modal
-        // setEditingIncident(incidents.find(inc => inc.id === id) || null);
-        // setIsEditorOpen(true);
+        // navigate(`/incidents/${id}`);
     };
     
     const handleEditIncident = (id: string) => {
         console.log("Edit incident:", id);
          // navigate(`/incidents/edit/${id}`);
-        // Or open a modal
-        // setEditingIncident(incidents.find(inc => inc.id === id) || null);
-        // setIsEditorOpen(true);
     };
 
     const handleCreateNewIncident = () => {
         console.log("Create new incident");
         // navigate('/incidents/new');
-        // Or open a modal
-        // setEditingIncident(null);
-        // setIsEditorOpen(true);
     }
 
 
     const columns: GridColDef<IncidentRow>[] = [
-        { field: 'title', headerName: 'Title', flex: 0.3, minWidth: 250 },
+        { field: 'title', headerName: 'Title', flex: 0.3, minWidth: 250, cellClassName: "text-dlp-text-primary" },
         {
             field: 'priority',
             headerName: 'Priority',
             flex: 0.1,
             minWidth: 120,
-            renderCell: (params) => <Chip label={params.value} color={getPriorityColor(params.value)} size="small" />
+            renderCell: (params) => <Chip label={params.value as string} color={getPriorityColor(params.value as string)} size="small" className="capitalize"/>
         },
-        { field: 'status', headerName: 'Status', flex: 0.1, minWidth: 120 },
-        { field: 'assigneeName', headerName: 'Assignee', flex: 0.15, minWidth: 150 },
+        { field: 'status', headerName: 'Status', flex: 0.1, minWidth: 120, cellClassName: "text-dlp-text-primary capitalize" },
+        { field: 'assigneeName', headerName: 'Assignee', flex: 0.15, minWidth: 150, cellClassName: "text-dlp-text-secondary" },
         {
             field: 'createdAt',
             headerName: 'Created At',
             flex: 0.15,
             minWidth: 180,
-            valueGetter: (params) => params.value ? new Date(params.value) : null,
-            renderCell: (params) => params.value ? format(params.value, 'MMM dd, yyyy HH:mm') : 'N/A',
+            valueGetter: (params) => params.value ? new Date(params.value as string) : null,
+            renderCell: (params) => params.value ? format(params.value as Date, 'MMM dd, yyyy HH:mm') : 'N/A',
+            cellClassName: "text-dlp-text-secondary"
         },
         {
             field: 'actions',
@@ -113,11 +109,13 @@ const IncidentPage: React.FC = () => {
                     icon={<Tooltip title="View Details"><VisibilityIcon /></Tooltip>}
                     label="View"
                     onClick={() => handleViewIncident(row.id)}
+                    key={`view-${row.id}`}
                 />,
                 <GridActionsCellItem
                     icon={<Tooltip title="Edit Incident"><EditIcon /></Tooltip>}
                     label="Edit"
                     onClick={() => handleEditIncident(row.id)}
+                    key={`edit-${row.id}`}
                 />,
             ],
         },
@@ -133,28 +131,30 @@ const IncidentPage: React.FC = () => {
                     icon: <AddCircleOutlineIcon />
                 }}
             />
-            {error && <MuiAlert severity="error" sx={{ mb: 2 }}>{error}</MuiAlert>}
-            <Paper sx={{ height: '70vh', width: '100%', backgroundColor: 'dlp-surface' }} className="shadow-xl">
+            {error && <MuiAlert severity="error" sx={{ mb: 2 }} onClose={() => setError(null)}>{error}</MuiAlert>}
+            <Paper sx={{ height: '70vh', width: '100%', backgroundColor: 'transparent' }} className="bg-dlp-surface shadow-xl">
                 <DataGrid
                     rows={incidents}
                     columns={columns}
                     loading={loading}
+                    paginationModel={paginationModel}
+                    onPaginationModelChange={setPaginationModel}
                     pageSizeOptions={[10, 25, 50]}
-                    initialState={{ pagination: { paginationModel: { pageSize: 10 }}}}
+                    rowCount={rowCount}
+                    paginationMode="server"
                     disableRowSelectionOnClick
                     sx={{
                         border: 'none',
-                        '& .MuiDataGrid-columnHeaders': { backgroundColor: 'rgba(255,255,255,0.05)'},
+                        color: 'var(--mui-palette-text-primary)', 
+                        '& .MuiDataGrid-columnHeaders': { backgroundColor: 'rgba(255,255,255,0.05)', color: 'var(--mui-palette-text-secondary)'},
+                        '& .MuiDataGrid-cell': { borderBottom: '1px solid rgba(255,255,255,0.1)' },
+                        '& .MuiTablePagination-root': { color: 'var(--mui-palette-text-secondary)' },
+                        '& .MuiIconButton-root': { color: 'var(--mui-palette-text-secondary)' },
+                        '& .MuiDataGrid-selectedRowCount': {color: 'var(--mui-palette-text-secondary)'},
+                        '& .MuiCheckbox-root': {color: 'var(--mui-palette-text-secondary)'}
                     }}
                 />
             </Paper>
-            {/* Placeholder for Incident Editor/Detail Modal */}
-            {/* <IncidentEditorModal
-                open={isEditorOpen}
-                onClose={() => setIsEditorOpen(false)}
-                incident={editingIncident}
-                onSave={() => { fetchIncidents(); setIsEditorOpen(false); }}
-            /> */}
         </Box>
     );
 };

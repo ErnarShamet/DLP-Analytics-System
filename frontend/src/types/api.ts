@@ -1,4 +1,5 @@
 // frontend/src/types/api.ts
+
 // Типы для ошибок API
 export interface ApiError {
     message: string; // Основное сообщение об ошибке

@@ -1,17 +1,18 @@
 ﻿// frontend/tailwind.config.js
+
 /** @type {import('tailwindcss').Config} */
 module.exports = {
   content: [
     "./src/**/*.{js,jsx,ts,tsx}",
-    "./public/index.html"
+    "./public/index.html", // if public/index.html is at root, this should be "./index.html"
+    "./index.html" 
   ],
   darkMode: 'class', // or 'media' if you prefer OS-level dark mode
   theme: {
     extend: {
       colors: {
-        // Example custom colors
         'primary': {
-          light: '#67e8f9', // Adjust to your theme
+          light: '#67e8f9', 
           DEFAULT: '#06b6d4',
           dark: '#0e7490',
         },
@@ -20,20 +21,18 @@ module.exports = {
           DEFAULT: '#ec4899',
           dark: '#be185d',
         },
-        // Add more custom colors for your DLP theme
-        'dlp-bg': '#1a202c', // Example dark background
-        'dlp-surface': '#2d3748', // Example surface color
+        'dlp-bg': '#1a202c', 
+        'dlp-surface': '#2d3748', 
         'dlp-text-primary': '#e2e8f0',
         'dlp-text-secondary': '#a0aec0',
-        'dlp-accent': '#4299e1', // Example accent color
+        'dlp-accent': '#4299e1', 
       },
       fontFamily: {
-        sans: ['Inter', 'sans-serif'], // Example: Using Inter font
+        sans: ['Inter', 'sans-serif'], 
       },
-      // You can extend other properties like spacing, borderRadius, etc.
     },
   },
   plugins: [
-    require('@tailwindcss/forms'), // For better default form styles
+    require('@tailwindcss/forms'), 
   ],
 }

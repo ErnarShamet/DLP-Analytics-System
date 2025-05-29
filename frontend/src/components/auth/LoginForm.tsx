@@ -1,12 +1,13 @@
 // frontend/src/components/auth/LoginForm.tsx
+
 import React, { useState } from 'react';
-import { useNavigate }_from 'react-router-dom';
-import { TextField, Button, Box, Typography, CircularProgress, Alert as MuiAlert } from '@mui/material';
+import { Link as RouterLink, useNavigate } from 'react-router-dom';
+import { TextField, Button, Box, Typography, CircularProgress, Alert as MuiAlert, Link as MuiLink } from '@mui/material';
 import { useFormik } from 'formik';
 import * as Yup from 'yup';
 import { useAppDispatch } from '../../store/hooks';
-import { loginUser } from '../../store/slices/authSlice'; // Your Redux thunk for login
-import { ApiError } from '../../types/api'; // Define this type
+import { loginUser } from '../../store/slices/authSlice'; 
+import { ApiError } from '../../types/api'; 
 
 const LoginSchema = Yup.object().shape({
     emailOrUsername: Yup.string().required('Email or Username is required'),
@@ -27,7 +28,7 @@ const LoginForm: React.FC = () => {
         onSubmit: async (values, { setSubmitting }) => {
         setError(null);
         try {
-            await dispatch(loginUser(values)).unwrap(); // .unwrap() will throw error if rejected
+            await dispatch(loginUser(values)).unwrap(); 
             navigate('/dashboard', { replace: true });
         } catch (err) {
             const apiError = err as ApiError;
@@ -57,6 +58,8 @@ const LoginForm: React.FC = () => {
             error={formik.touched.emailOrUsername && Boolean(formik.errors.emailOrUsername)}
             helperText={formik.touched.emailOrUsername && formik.errors.emailOrUsername}
             disabled={formik.isSubmitting}
+            InputLabelProps={{ className: 'text-dlp-text-secondary' }}
+            InputProps={{ className: 'text-dlp-text-primary bg-dlp-surface' }}
         />
         <TextField
             margin="normal"
@@ -73,6 +76,8 @@ const LoginForm: React.FC = () => {
             error={formik.touched.password && Boolean(formik.errors.password)}
             helperText={formik.touched.password && formik.errors.password}
             disabled={formik.isSubmitting}
+            InputLabelProps={{ className: 'text-dlp-text-secondary' }}
+            InputProps={{ className: 'text-dlp-text-primary bg-dlp-surface' }}
         />
         {/* Add Remember Me, Forgot Password later */}
         <Button
@@ -86,11 +91,16 @@ const LoginForm: React.FC = () => {
             {formik.isSubmitting ? <CircularProgress size={24} color="inherit" /> : 'Sign In'}
         </Button>
         <Box textAlign="center">
-            <Typography variant="body2">
+            <Typography variant="body2" className="text-dlp-text-secondary">
             Don't have an account?{' '}
             <MuiLink component={RouterLink} to="/register" variant="body2" className="text-primary-light hover:underline">
                 Sign Up
             </MuiLink>
+            </Typography>
+            <Typography variant="body2" sx={{ mt: 1 }} className="text-dlp-text-secondary">
+                <MuiLink component={RouterLink} to="/forgot-password" variant="body2" className="text-primary-light hover:underline">
+                Forgot password?
+                </MuiLink>
             </Typography>
         </Box>
         </Box>

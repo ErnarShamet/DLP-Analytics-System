@@ -1,6 +1,7 @@
 // frontend/src/components/MainLayout.tsx
+
 import React, { useState } from 'react';
-import { Outlet, Link as RouterLink, useNavigate } from 'react-router-dom';
+import { Outlet, Link as RouterLink } from 'react-router-dom'; // useNavigate removed as not used directly here
 import {
     AppBar, Toolbar, Typography, Drawer, List, ListItem, ListItemButton,
     ListItemIcon, ListItemText, IconButton, Box, CssBaseline, Tooltip, Avatar, Menu, MenuItem, Divider
@@ -10,15 +11,15 @@ import MenuIcon from '@mui/icons-material/Menu';
 import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
 import ChevronRightIcon from '@mui/icons-material/ChevronRight';
 import DashboardIcon from '@mui/icons-material/Dashboard';
-import NotificationsIcon from '@mui/icons-material/Notifications'; // For Alerts
-import SecurityIcon from '@mui/icons-material/Security'; // For Policies
-import ReportProblemIcon from '@mui/icons-material/ReportProblem'; // For Incidents
-import PeopleIcon from '@mui/icons-material/People'; // For User Management
-import SettingsIcon from '@mui/icons-material/Settings';
+import NotificationsIcon from '@mui/icons-material/Notifications'; 
+import SecurityIcon from '@mui/icons-material/Security'; 
+import ReportProblemIcon from '@mui/icons-material/ReportProblem'; 
+import PeopleIcon from '@mui/icons-material/People'; 
+// import SettingsIcon from '@mui/icons-material/Settings'; // Not used in menu items
 import LogoutIcon from '@mui/icons-material/Logout';
 
-import { useAppDispatch, useAppSelector } from '../store/hooks'; // Redux hooks
-import { logout, selectUser } from '../store/slices/authSlice'; // Redux auth actions and selector
+import { useAppDispatch, useAppSelector } from '../store/hooks'; 
+import { logout, selectUser } from '../store/slices/authSlice'; 
 
 const drawerWidth = 240;
 
@@ -29,6 +30,8 @@ const openedMixin = (theme: Theme): CSSObject => ({
         duration: theme.transitions.duration.enteringScreen,
     }),
     overflowX: 'hidden',
+    backgroundColor: theme.palette.background.paper, // Use theme color
+    borderRight: `1px solid ${theme.palette.divider}`, // Use theme color
 });
 
 const closedMixin = (theme: Theme): CSSObject => ({
@@ -41,6 +44,8 @@ const closedMixin = (theme: Theme): CSSObject => ({
     [theme.breakpoints.up('sm')]: {
         width: `calc(${theme.spacing(8)} + 1px)`,
     },
+    backgroundColor: theme.palette.background.paper, // Use theme color
+    borderRight: `1px solid ${theme.palette.divider}`, // Use theme color
 });
 
 const DrawerHeader = styled('div')(({ theme }) => ({
@@ -59,6 +64,9 @@ const StyledAppBar = styled(AppBar, {
         easing: theme.transitions.easing.sharp,
         duration: theme.transitions.duration.leavingScreen,
     }),
+    backgroundColor: theme.palette.background.paper, // Use theme color
+    color: theme.palette.text.primary, // Use theme color for text
+    boxShadow: theme.shadows[1],
     ...(open && {
         marginLeft: drawerWidth,
         width: `calc(100% - ${drawerWidth}px)`,
@@ -88,9 +96,9 @@ const StyledDrawer = styled(Drawer, { shouldForwardProp: (prop) => prop !== 'ope
 
 const MainLayout: React.FC = () => {
     const theme = useTheme();
-    const navigate = useNavigate();
+    // const navigate = useNavigate(); // Not directly used for navigation actions here
     const dispatch = useAppDispatch();
-    const user = useAppSelector(selectUser); // Get user from Redux store
+    const user = useAppSelector(selectUser); 
 
     const [open, setOpen] = useState(true);
     const [anchorElUser, setAnchorElUser] = React.useState<null | HTMLElement>(null);
@@ -113,7 +121,6 @@ const MainLayout: React.FC = () => {
 
     const handleLogout = () => {
         dispatch(logout());
-        // navigate('/login', { replace: true }); // ProtectedRoute will handle redirect
         handleCloseUserMenu();
     };
 
@@ -135,7 +142,7 @@ const MainLayout: React.FC = () => {
 
 
     return (
-        <Box sx={{ display: 'flex' }}>
+        <Box sx={{ display: 'flex' }} className="bg-dlp-bg min-h-screen">
         <CssBaseline />
         <StyledAppBar position="fixed" open={open}>
             <Toolbar>
@@ -158,7 +165,7 @@ const MainLayout: React.FC = () => {
             <Box sx={{ flexGrow: 0 }}>
                 <Tooltip title="Open settings">
                 <IconButton onClick={handleOpenUserMenu} sx={{ p: 0 }}>
-                    <Avatar alt={user?.fullName || user?.username} src="/static/images/avatar/2.jpg" /> {/* Replace with actual avatar logic */}
+                    <Avatar alt={user?.fullName || user?.username} src={`https://i.pravatar.cc/150?u=${user?.email || 'default'}`} />
                 </IconButton>
                 </Tooltip>
                 <Menu
@@ -170,16 +177,17 @@ const MainLayout: React.FC = () => {
                 transformOrigin={{ vertical: 'top', horizontal: 'right' }}
                 open={Boolean(anchorElUser)}
                 onClose={handleCloseUserMenu}
+                PaperProps={{className: "bg-dlp-surface text-dlp-text-primary"}}
                 >
-                <MenuItem onClick={() => { /* navigate('/profile'); */ handleCloseUserMenu(); }}>
+                <MenuItem onClick={() => { handleCloseUserMenu(); }}>
                     <Typography textAlign="center">Profile (WIP)</Typography>
                 </MenuItem>
-                <MenuItem onClick={() => { /* navigate('/settings'); */ handleCloseUserMenu(); }}>
+                <MenuItem onClick={() => { handleCloseUserMenu(); }}>
                     <Typography textAlign="center">Settings (WIP)</Typography>
                 </MenuItem>
-                <Divider />
+                <Divider sx={{borderColor: "rgba(255,255,255,0.1)"}}/>
                 <MenuItem onClick={handleLogout}>
-                    <ListItemIcon>
+                    <ListItemIcon sx={{color: "inherit"}}>
                     <LogoutIcon fontSize="small" />
                     </ListItemIcon>
                     <Typography textAlign="center">Logout</Typography>
@@ -190,15 +198,14 @@ const MainLayout: React.FC = () => {
         </StyledAppBar>
         <StyledDrawer variant="permanent" open={open}>
             <DrawerHeader>
-            {/* Optional: Add Logo here */}
-            <Typography variant="h6" sx={{ flexGrow: 1, textAlign: 'center', opacity: open ? 1 : 0, transition: 'opacity 0.3s' }}>
-                {/* Your Logo or Short Name */}
+            <Typography variant="h6" sx={{ flexGrow: 1, textAlign: 'center', opacity: open ? 1 : 0, transition: 'opacity 0.3s', color: theme.palette.text.primary }}>
+                 DLP
             </Typography>
-            <IconButton onClick={handleDrawerClose}>
+            <IconButton onClick={handleDrawerClose} sx={{color: theme.palette.text.secondary}}>
                 {theme.direction === 'rtl' ? <ChevronRightIcon /> : <ChevronLeftIcon />}
             </IconButton>
             </DrawerHeader>
-            <Divider />
+            <Divider sx={{borderColor: "rgba(255,255,255,0.1)"}}/>
             <List>
             {menuItems.filter(item => isUserAllowed(item.roles)).map((item) => (
                 <ListItem key={item.text} disablePadding sx={{ display: 'block' }}>
@@ -209,6 +216,17 @@ const MainLayout: React.FC = () => {
                     minHeight: 48,
                     justifyContent: open ? 'initial' : 'center',
                     px: 2.5,
+                    color: theme.palette.text.secondary,
+                    '&.Mui-selected': {
+                        backgroundColor: theme.palette.action.selected,
+                        color: theme.palette.primary.main,
+                        '& .MuiListItemIcon-root': {
+                            color: theme.palette.primary.main,
+                        }
+                    },
+                    '&:hover': {
+                        backgroundColor: theme.palette.action.hover,
+                    }
                     }}
                 >
                     <ListItemIcon
@@ -216,6 +234,7 @@ const MainLayout: React.FC = () => {
                         minWidth: 0,
                         mr: open ? 3 : 'auto',
                         justifyContent: 'center',
+                        color: 'inherit'
                     }}
                     >
                     {item.icon}
@@ -225,7 +244,7 @@ const MainLayout: React.FC = () => {
                 </ListItem>
             ))}
             </List>
-            <Divider />
+            <Divider sx={{borderColor: "rgba(255,255,255,0.1)"}}/>
             {adminMenuItems.filter(item => isUserAllowed(item.roles)).length > 0 && (
             <List>
                 <Typography variant="caption" sx={{ pl: open? 2.5 : 1, display: 'block', color: 'text.secondary', opacity: open? 1 : 0}}>
@@ -236,17 +255,29 @@ const MainLayout: React.FC = () => {
                     <ListItemButton
                     component={RouterLink}
                     to={item.path}
-                    sx={{
+                     sx={{
                         minHeight: 48,
                         justifyContent: open ? 'initial' : 'center',
                         px: 2.5,
-                    }}
+                        color: theme.palette.text.secondary,
+                         '&.Mui-selected': {
+                            backgroundColor: theme.palette.action.selected,
+                            color: theme.palette.primary.main,
+                            '& .MuiListItemIcon-root': {
+                                color: theme.palette.primary.main,
+                            }
+                        },
+                        '&:hover': {
+                            backgroundColor: theme.palette.action.hover,
+                        }
+                        }}
                     >
                     <ListItemIcon
                         sx={{
                         minWidth: 0,
                         mr: open ? 3 : 'auto',
                         justifyContent: 'center',
+                        color: 'inherit'
                         }}
                     >
                         {item.icon}
@@ -258,9 +289,9 @@ const MainLayout: React.FC = () => {
             </List>
             )}
         </StyledDrawer>
-        <Box component="main" sx={{ flexGrow: 1, p: 3, backgroundColor: 'background.default', minHeight: '100vh' }}>
-            <DrawerHeader /> {/* This is to offset content below AppBar */}
-            <Outlet /> {/* Child routes will render here */}
+        <Box component="main" sx={{ flexGrow: 1, p: 3, backgroundColor: 'dlp-bg', minHeight: '100vh' }}>
+            <DrawerHeader /> 
+            <Outlet /> 
         </Box>
         </Box>
     );

@@ -1,6 +1,7 @@
-﻿{
+﻿
+{
   "compilerOptions": {
-    "target": "es6", // Changed to es6 for better compatibility with modern JS features
+    "target": "es6",
     "lib": [
       "dom",
       "dom.iterable",
@@ -19,8 +20,8 @@
     "isolatedModules": true,
     "noEmit": true,
     "jsx": "react-jsx",
-    "baseUrl": "src", // Allows absolute imports from src/
-    "paths": { // Example path aliases
+    "baseUrl": ".", 
+    "paths": { 
       "@components/*": ["components/*"],
       "@pages/*": ["pages/*"],
       "@services/*": ["services/*"],
@@ -33,6 +34,9 @@
     }
   },
   "include": [
-    "src"
+    "./**/*"
+  ],
+  "exclude": [
+    "node_modules"
   ]
 }

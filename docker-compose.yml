@@ -73,25 +73,18 @@ services:
       - dlp_network
     restart: unless-stopped
 
-  mongo:
-    image: mongo:6.0 # Рекомендуется использовать конкретную версию
-    ports:
-      - "27017:27017"
-    volumes:
-      - mongo_data:/data/db # Именованный том для сохранения данных MongoDB
-      # Можно добавить скрипты инициализации, если нужно:
-      # - ./mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.js:ro
-    environment: # Для создания пользователя при первом запуске (если не используется init-скрипт)
-      # MONGO_INITDB_ROOT_USERNAME=root # Лучше задавать через .env или напрямую, если это только для локальной разработки
-      # MONGO_INITDB_ROOT_PASSWORD=example
-      # MONGO_INITDB_DATABASE=dlp_analytics_expanded # Создаст эту БД, если ее нет
-      # Если используете кастомного пользователя:
-      # MONGO_INITDB_USERNAME=${MONGO_USER:-user}
-      # MONGO_INITDB_PASSWORD=${MONGO_PASSWORD:-password}
-    networks:
-      - dlp_network
-    restart: unless-stopped
-
+    mongo:
+      image: mongo:6.0
+      ports:
+        - "27017:27017"
+      volumes:
+        - mongo_data:/data/db
+      environment:
+        - MONGO_INITDB_ROOT_USERNAME=root
+        - MONGO_INITDB_ROOT_PASSWORD=1234567890
+      networks:
+        - dlp_network
+      restart: unless-stopped
   redis:
     image: redis:7.0-alpine # Рекомендуется использовать конкретную версию
     ports:

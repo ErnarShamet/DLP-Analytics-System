@@ -1,4 +1,5 @@
 // frontend/src/contexts/AuthContext.tsx
+
 // Example AuthContext (if not using Redux for auth)
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import apiService from '../services/apiService'; // Your axios instance
@@ -35,12 +36,15 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
             localStorage.removeItem('user');
             setToken(null);
             setUser(null);
-            apiService.defaults.headers.common['Authorization'] = '';
+            if (apiService.defaults.headers.common) {
+                 delete apiService.defaults.headers.common['Authorization'];
+            }
             }
         }
         setIsLoading(false);
         };
         loadUserFromToken();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     const login = (newToken: string, userData: User) => {
@@ -54,7 +58,9 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     const logout = () => {
         localStorage.removeItem('authToken');
         localStorage.removeItem('user');
-        apiService.defaults.headers.common['Authorization'] = '';
+        if (apiService.defaults.headers.common) {
+            delete apiService.defaults.headers.common['Authorization'];
+        }
         setToken(null);
         setUser(null);
     };

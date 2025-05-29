@@ -1,4 +1,5 @@
 // frontend/src/components/common/PageHeader.tsx
+
 import React from 'react';
 import { Typography, Box, Breadcrumbs, Link as MuiLink, Button } from '@mui/material';
 import { Link as RouterLink } from 'react-router-dom';
@@ -38,7 +39,7 @@ const PageHeader: React.FC<PageHeaderProps> = ({ title, breadcrumbs, actionButto
                     {crumb.label}
                     </MuiLink>
                 ) : (
-                    <Typography key={index} color="text.primary" className="text-dlp-text-primary">
+                    <Typography key={index} className="text-dlp-text-primary">
                     {crumb.label}
                     </Typography>
                 )
@@ -55,7 +56,7 @@ const PageHeader: React.FC<PageHeaderProps> = ({ title, breadcrumbs, actionButto
             color={actionButton.color || "primary"}
             startIcon={actionButton.icon}
             onClick={actionButton.onClick}
-            className="mt-4 sm:mt-0"
+            className="mt-4 sm:mt-0 bg-primary hover:bg-primary-dark text-white"
             >
             {actionButton.label}
             </Button>

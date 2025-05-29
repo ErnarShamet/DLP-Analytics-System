@@ -1,8 +1,9 @@
 // frontend/src/store/slices/authSlice.ts
+
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
 import apiService from '../../services/apiService';
-import { User, AuthState, LoginCredentials, RegisterData } from '../../types'; // Убедитесь, что эти типы определены в src/types/index.ts
-import { ApiError } from '../../types/api'; // Убедитесь, что этот тип определен в src/types/index.ts или src/types/api.ts
+import { User, AuthState, LoginCredentials, RegisterData } from '../../types'; 
+import { ApiError } from '../../types/api'; 
 
 // Начальное состояние
 const initialState: AuthState = {
@@ -36,19 +37,14 @@ export const loginUser = createAsyncThunk<
 
 // Async thunk для регистрации пользователя
 export const registerUser = createAsyncThunk<
-    { token: string; user: User }, // Возвращаемый тип, если регистрация сразу логинит пользователя
+    { token: string; user: User }, 
     RegisterData,
     { rejectValue: ApiError }
     >(
     'auth/registerUser',
     async (registerData, { rejectWithValue }) => {
         try {
-        // Предполагаем, что бэкенд /auth/register возвращает токен и пользователя при успехе (как и /auth/login)
         const response = await apiService.post<{ accessToken: string; user: User }>('/auth/register', registerData);
-        // Если регистрация не логинит автоматически, этот thunk может ничего не возвращать или возвращать только сообщение об успехе,
-        // и тогда вам нужно будет отдельно вызывать loginUser или перенаправлять на страницу входа.
-        // В нашем случае, наш бэкенд контроллер authController.js -> registerUser -> sendTokenResponse
-        // возвращает токен и пользователя, так что мы можем сразу обновить состояние.
         localStorage.setItem('authToken', response.data.accessToken);
         localStorage.setItem('user', JSON.stringify(response.data.user));
         apiService.defaults.headers.common['Authorization'] = `Bearer ${response.data.accessToken}`;
@@ -68,24 +64,25 @@ export const fetchCurrentUser = createAsyncThunk<
     >(
     'auth/fetchCurrentUser',
     async (_, { rejectWithValue, getState }) => {
-        const token = getState().auth.token || localStorage.getItem('authToken'); // Проверяем и Redux state и localStorage
+        const token = getState().auth.token || localStorage.getItem('authToken'); 
         if (!token) {
         return rejectWithValue({ message: 'No token found' } as ApiError);
         }
-        // Убедимся, что заголовок установлен, если он есть в localStorage, но еще не в axios instance
+        
         if (!apiService.defaults.headers.common['Authorization'] && token) {
             apiService.defaults.headers.common['Authorization'] = `Bearer ${token}`;
         }
 
         try {
-        const response = await apiService.get<{ data: User }>('/auth/me'); // Предполагаем, что /auth/me возвращает { success: true, data: User }
+        const response = await apiService.get<{ data: User }>('/auth/me'); 
         localStorage.setItem('user', JSON.stringify(response.data.data));
         return response.data.data;
         } catch (err: any) {
-        // Если токен невалиден, очищаем хранилище
         localStorage.removeItem('authToken');
         localStorage.removeItem('user');
-        delete apiService.defaults.headers.common['Authorization'];
+        if (apiService.defaults.headers.common) {
+            delete apiService.defaults.headers.common['Authorization'];
+        }
         const errorData = err.response?.data || { message: err.message || 'Failed to fetch current user' };
         return rejectWithValue(errorData as ApiError);
         }
@@ -99,7 +96,9 @@ const authSlice = createSlice({
         logout: (state) => {
         localStorage.removeItem('authToken');
         localStorage.removeItem('user');
-        delete apiService.defaults.headers.common['Authorization'];
+        if (apiService.defaults.headers.common) {
+            delete apiService.defaults.headers.common['Authorization'];
+        }
         state.user = null;
         state.token = null;
         state.isAuthenticated = false;
@@ -138,13 +137,10 @@ const authSlice = createSlice({
         })
         .addCase(registerUser.fulfilled, (state, action: PayloadAction<{ token: string; user: User }>) => {
             state.isLoading = false;
-            // Если регистрация сразу логинит пользователя:
             state.isAuthenticated = true;
             state.user = action.payload.user;
             state.token = action.payload.token;
             state.error = null;
-            // Если нет, можно просто установить сообщение об успехе или ничего не делать здесь,
-            // а пользователь будет перенаправлен на страницу входа.
         })
         .addCase(registerUser.rejected, (state, action) => {
             state.isLoading = false;
@@ -152,24 +148,20 @@ const authSlice = createSlice({
         })
         // Fetch Current User
         .addCase(fetchCurrentUser.pending, (state) => {
-            state.isLoading = true; // Можно установить в true, если это основной процесс загрузки приложения
+            state.isLoading = true; 
             state.error = null;
         })
         .addCase(fetchCurrentUser.fulfilled, (state, action: PayloadAction<User>) => {
             state.isLoading = false;
             state.isAuthenticated = true;
             state.user = action.payload;
-            // Токен уже должен быть в state.token, если он был в localStorage
             if (!state.token) state.token = localStorage.getItem('authToken');
         })
         .addCase(fetchCurrentUser.rejected, (state, action) => {
             state.isLoading = false;
             state.isAuthenticated = false;
             state.user = null;
-            state.token = null; // Токен невалиден
-            // Можно не устанавливать ошибку здесь, если это фоновая проверка,
-            // или если это явная ошибка, которую нужно показать пользователю.
-            // state.error = action.payload ? action.payload.message : (action.error.message || 'Session expired');
+            state.token = null; 
         });
     },
 });
